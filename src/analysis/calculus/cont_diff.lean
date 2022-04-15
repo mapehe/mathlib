@@ -174,7 +174,7 @@ variables {𝕜 : Type*} [nondiscrete_normed_field 𝕜]
 {F : Type*} [normed_group F] [normed_space 𝕜 F]
 {G : Type*} [normed_group G] [normed_space 𝕜 G]
 {s s₁ t u : set E} {f f₁ : E → F} {g : F → G} {x : E} {c : F}
-{b : E × F → G}
+{b : E × F → G} {n : with_top ℕ}
 
 /-! ### Functions with a Taylor series on a domain -/
 
@@ -1607,6 +1607,17 @@ The first projection in a product is `C^∞`.
 lemma cont_diff_fst {n : with_top ℕ} : cont_diff 𝕜 n (prod.fst : E × F → E) :=
 is_bounded_linear_map.cont_diff is_bounded_linear_map.fst
 
+lemma cont_diff.fst {f : E → F × G} (hf : cont_diff 𝕜 n f) : cont_diff 𝕜 n (λ x, (f x).fst) :=
+cont_diff_fst.comp hf
+
+lemma cont_diff.snd {f : E → F × G} (hf : cont_diff 𝕜 n f) : cont_diff 𝕜 n (λ x, (f x).snd) :=
+cont_diff_snd.comp hf
+
+lemma cont_diff.fst' {f : E → G} (hf : cont_diff 𝕜 n f) : cont_diff 𝕜 n (λ x : E × F, f x.fst) :=
+hf.comp cont_diff_fst
+
+lemma cont_diff.snd' {f : F → G} (hf : cont_diff 𝕜 n f) : cont_diff 𝕜 n (λ x : E × F, f x.snd) :=
+hf.comp cont_diff_snd
 /--
 The first projection on a domain in a product is `C^∞`.
 -/
@@ -1911,7 +1922,6 @@ variables {ι : Type*} [fintype ι] {F' : ι → Type*} [Π i, normed_group (F' 
   [Π i, normed_space 𝕜 (F' i)] {φ : Π i, E → F' i}
   {p' : Π i, E → formal_multilinear_series 𝕜 E (F' i)}
   {Φ : E → Π i, F' i} {P' : E → formal_multilinear_series 𝕜 E (Π i, F' i)}
-  {n : with_top ℕ}
 
 lemma has_ftaylor_series_up_to_on_pi :
   has_ftaylor_series_up_to_on n (λ x i, φ i x)
@@ -1965,6 +1975,17 @@ cont_diff_within_at_pi
 lemma cont_diff_pi :
   cont_diff 𝕜 n Φ ↔ ∀ i, cont_diff 𝕜 n (λ x, Φ x i) :=
 by simp only [← cont_diff_on_univ, cont_diff_on_pi]
+
+variables (𝕜 E)
+lemma cont_diff_apply {ι : Type*} [fintype ι] {n : with_top ℕ} (i : ι) :
+  cont_diff 𝕜 n (λ (f : ι → E), f i) :=
+cont_diff_pi.mp cont_diff_id i
+
+lemma cont_diff_apply_apply {ι ι' : Type*} [fintype ι] [fintype ι'] {n : with_top ℕ}
+  (i : ι) (j : ι') : cont_diff 𝕜 n (λ (f : ι → ι' → E), f i j) :=
+cont_diff_pi.mp (cont_diff_apply 𝕜 (ι' → E) i) j
+
+variables {𝕜 E}
 
 end pi
 
@@ -2434,7 +2455,6 @@ lemma cont_diff_on.smul {n : with_top ℕ} {s : set E} {f : E → 𝕜} {g : E �
 section prod_map
 variables {E' : Type*} [normed_group E'] [normed_space 𝕜 E']
 {F' : Type*} [normed_group F'] [normed_space 𝕜 F']
-{n : with_top ℕ}
 
 /-- The product map of two `C^n` functions within a set at a point is `C^n`
 within the product set at the product point. -/
